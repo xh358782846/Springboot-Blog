@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xhan.blog.dao.TTagMapper" >
+  <resultMap id="BaseResultMap" type="com.xhan.blog.pojo.TTag" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="tcount" property="tcount"/>
+    <collection property="blogs" ofType="com.xhan.blog.pojo.TBlog">
+      <id column="bid" property="id"/>
+      <result column="title" property="title"/>
+    </collection>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, name
+  </sql>
+
+  <select id="getAllType" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from t_tag
+  </select>
+    <select id="getIndexBlogTag" resultMap="BaseResultMap">
+ select t.id , t.name, b.id bid, b.title
+        from t_tag t, t_blog b, t_blog_tags bt
+        where b.id = bt.blogs_id and t.id =bt.tags_id order by t.id
+   </select>
+  <select id="getBlogTag" resultMap="BaseResultMap">
+ select t.id , t.name, b.id bid, b.title
+        from t_tag t, t_blog b, t_blog_tags bt
+        where b.id = bt.blogs_id and t.id =bt.tags_id order by t.id desc
+   </select>
+  <select id="getTagCount" resultMap="BaseResultMap">
+    select t.count,bt.tags_id,
+    from t_blog_tags
+    where  tags_id
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_tag
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectByName" resultMap="BaseResultMap"  parameterType="String" >
+    select
+    <include refid="Base_Column_List" />
+    from t_tag
+    where name = #{name ,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from t_tag
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.xhan.blog.pojo.TTag" >
+    insert into t_tag (id, name)
+    values (#{id,jdbcType=BIGINT}, #{name,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.xhan.blog.pojo.TTag" >
+    insert into t_tag
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="name != null" >
+        name,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xhan.blog.pojo.TTag" >
+    update t_tag
+    <set >
+      <if test="name != null" >
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xhan.blog.pojo.TTag" >
+    update t_tag
+    set name = #{name,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

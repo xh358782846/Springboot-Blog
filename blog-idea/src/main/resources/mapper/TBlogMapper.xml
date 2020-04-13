@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xhan.blog.dao.TBlogMapper" >
+  <resultMap id="BaseResultMap" type="com.xhan.blog.pojo.TBlog" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="appreciation" property="appreciation" jdbcType="BIT" />
+    <result column="commentabled" property="commentabled" jdbcType="BIT" />
+    <result property="description" column="description"/>
+    <result column="content" property="content" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="first_picture" property="firstPicture" jdbcType="VARCHAR" />
+    <result column="flag" property="flag" jdbcType="VARCHAR" />
+    <result column="published" property="published" jdbcType="BIT" />
+    <result column="recommend" property="recommend" jdbcType="BIT" />
+    <result column="share_statement" property="shareStatement" jdbcType="BIT" />
+    <result column="title" property="title" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="views" property="views" jdbcType="INTEGER" />
+    <result column="type_id" property="typeId" jdbcType="BIGINT" />
+    <result column="user_id" property="userId" jdbcType="BIGINT" />
+    <result column="tag_ids" property="tagIds" />
+    <association property="type"  javaType="com.xhan.blog.pojo.TType">
+        <id property="id" column="typeid"/>
+        <result property="name" column="typename"/>
+    </association>
+    <association property="user" javaType="com.xhan.blog.pojo.TUser">
+        <id property="id" column="uid"/>
+        <result property="nickname" column="nickname"/>
+        <result property="username" column="username"/>
+        <result property="email" column="email"/>
+        <result property="avatar" column="avatar"/>
+    </association>
+    <collection property="tags" ofType="com.xhan.blog.pojo.TTag">
+        <id property="id" column="tagid"/>
+        <result property="name" column="tagname"/>
+<!--        <result property="tcount"/>-->
+    </collection>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, appreciation, commentabled,description, content, create_time, first_picture, flag, published,
+    recommend, share_statement, title, update_time, views, type_id, user_id,tag_ids
+  </sql>
+
+<!--  获取前台展示-->
+  <select id="getIndexBlog" resultMap="BaseResultMap">
+    select b.id, b.title, b.first_picture,b.views,b.update_time,b.description,
+            t.id typeid, t.name typename,
+            u.nickname,u.avatar
+    from t_blog b ,t_type t,t_user u
+    where b.type_id=t.id and u.id=b.user_id order by b.update_time desc
+  </select>
+
+
+
+  <select id="getAllBlog" resultMap="BaseResultMap">
+    select b.id, b.title, b.update_time, b.recommend, b.type_id, b.published,
+               t.id typeid, t.name typename
+    from t_blog b ,t_type t
+    where b.type_id=t.id
+  </select>
+
+<!--获取推荐博客-->
+  <select id="getAllRecommendBlog" resultMap="BaseResultMap">
+    select id,title,recommend from t_blog order by update_time desc limit 5
+  </select>
+
+<!--根据博客ID查询博客信息,包括作者,分类,标签-->
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+     select b.id, b.published, b.flag, b.title, b.content, b.type_id,
+         b.tag_ids, b.first_picture, b.description, b.recommend,b.update_time,
+         b.share_statement, b.appreciation, b.commentabled,b.user_id,
+         t.id typeid ,t.name typename,u.id uid,u.nickname
+        from t_blog b,t_type t,t_user u,t_tag t2
+        where
+          b.type_id=t.id and b.user_id = u.id and   b.id = #{id} ;
+  </select>
+
+<!--得到详细信息-->
+  <select id="getDetailedBlog" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+        select b.id, b.first_picture, b.flag, b.title, b.content, b.views,
+        b.update_time,b.commentabled, b.share_statement, b.appreciation,
+        u.nickname, u.avatar,
+        tag.id tagid, tag.name tagname
+        from t_blog b, t_user u, t_tag tag, t_blog_tags tb
+        where b.user_id = u.id and tb.blogs_id = b.id and tb.tags_id = tag.id and  b.id = #{id}
+    </select>
+<!--  每当请求详细信息时，view+1-->
+  <update id="updateView" parameterType="com.xhan.blog.pojo.TBlog">
+    update t_blog set views=#{views} where  id=#{id};
+  </update>
+
+<!--  博客标签修改时先删除后保存-->
+  <delete id="deleteBlogAndTag" parameterType="java.lang.Long">
+    delete from t_blog_tags where blogs_id= #{id};
+  </delete>
+<!--将博客对应的标签Id和博客对应关系储存 以便查询-->
+  <insert id="saveBlogAndTag" parameterType="com.xhan.blog.pojo.TBlogTags" >
+        insert into t_blog_tags (tags_id, blogs_id) values (#{tagsId},#{blogsId});
+    </insert>
+
+  <!--根据类型Id拿到该标签下的博客-->
+  <select id="getBlogByTypeId" resultMap="BaseResultMap">
+        select b.id, b.title, b.first_picture, b.views, b.update_time, b.description,
+        t.name typename, t.id typeid,
+        u.nickname, u.avatar
+        from t_blog b, t_type t, t_user u
+        where b.type_id = t.id and u.id = b.user_id and b.type_id = #{typeId} order by b.update_time desc
+    </select>
+<!--根据标签Id拿到该标签下的博客-->
+  <select id="getBlogByTagId" resultMap="BaseResultMap">
+        select b.id, b.title, b.first_picture, b.views, b.update_time, b.description,
+        t.name typename, t.id typeid,
+        t1.name tagname, t1.id tagid,
+        u.nickname, u.avatar
+        from t_blog b, t_type t, t_user u, t_blog_tags tb, t_tag t1
+        where b.type_id = t.id and u.id = b.user_id and tb.blogs_id = b.id and tb.tags_id = t1.id and t1.id = #{tagId}
+        order by b.update_time desc
+    </select>
+<!--根据Id删除对应的博客-->
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+
+    DELETE t_blog,t_blog_tags from t_blog LEFT JOIN t_blog_tags ON t_blog.id=t_blog_tags.blogs_id WHERE t_blog.id=#{id,jdbcType=BIGINT}
+
+  </delete>
+
+  <insert id="insert" parameterType="com.xhan.blog.pojo.TBlog" >
+    insert into t_blog (id, appreciation, commentabled,description,
+      content, create_time, first_picture,
+      flag, published, recommend,
+      share_statement, title, update_time,
+      views, type_id, user_id,tag_ids
+      )
+    values (#{id,jdbcType=BIGINT}, #{appreciation,jdbcType=BIT}, #{commentabled,jdbcType=BIT},#{description,jdbcType=BIT},
+      #{content,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{firstPicture,jdbcType=VARCHAR},
+      #{flag,jdbcType=VARCHAR}, #{published,jdbcType=BIT}, #{recommend,jdbcType=BIT},
+      #{shareStatement,jdbcType=BIT}, #{title,jdbcType=VARCHAR}, #{updateTime,jdbcType=TIMESTAMP},
+      #{views,jdbcType=INTEGER}, #{typeId,jdbcType=BIGINT}, #{userId,jdbcType=BIGINT},#{tag_Ids,jdbcType=BIGINT}
+      )
+  </insert>
+
+  <!--useGeneratedKeys="true"；使用自增主键获取主键值策略
+    keyProperty；指定对应的主键属性，也就是mybatis获取到主键值以后，将这个值封装给javaBean的哪个属性
+-->
+  <insert id="insertSelective" parameterType="com.xhan.blog.pojo.TBlog" useGeneratedKeys="true" keyProperty="id">
+    insert into t_blog
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="appreciation != null" >
+        appreciation,
+      </if>
+      <if test="commentabled != null" >
+        commentabled,
+      </if>
+      <if test="description != null" >
+        description,
+      </if>
+      <if test="content != null" >
+        content,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="firstPicture != null" >
+        first_picture,
+      </if>
+      <if test="flag != null" >
+        flag,
+      </if>
+      <if test="published != null" >
+        published,
+      </if>
+      <if test="recommend != null" >
+        recommend,
+      </if>
+      <if test="shareStatement != null" >
+        share_statement,
+      </if>
+      <if test="title != null" >
+        title,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+      <if test="views != null" >
+        views,
+      </if>
+      <if test="typeId != null" >
+        type_id,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="tagIds != null" >
+        tag_ids,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="appreciation != null" >
+        #{appreciation,jdbcType=BIT},
+      </if>
+      <if test="commentabled != null" >
+        #{commentabled,jdbcType=BIT},
+      </if>
+      <if test="description != null" >
+        #{description,jdbcType=BIT},
+      </if>
+      <if test="content != null" >
+        #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="firstPicture != null" >
+        #{firstPicture,jdbcType=VARCHAR},
+      </if>
+      <if test="flag != null" >
+        #{flag,jdbcType=VARCHAR},
+      </if>
+      <if test="published != null" >
+        #{published,jdbcType=BIT},
+      </if>
+      <if test="recommend != null" >
+        #{recommend,jdbcType=BIT},
+      </if>
+      <if test="shareStatement != null" >
+        #{shareStatement,jdbcType=BIT},
+      </if>
+      <if test="title != null" >
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="views != null" >
+        #{views,jdbcType=INTEGER},
+      </if>
+      <if test="typeId != null" >
+        #{typeId,jdbcType=BIGINT},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="tagIds != null" >
+        #{tagIds,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+<!--  跟据ID动态修改，若为空则保持原有属性-->
+  <update id="updateByPrimaryKeySelective" parameterType="com.xhan.blog.pojo.TBlog" >
+    update t_blog
+    <set >
+      <if test="appreciation != null" >
+        appreciation = #{appreciation,jdbcType=BIT},
+      </if>
+      <if test="commentabled != null" >
+        commentabled = #{commentabled,jdbcType=BIT},
+      </if>
+      <if test="description != null" >
+        description = #{description,jdbcType=BIT},
+      </if>
+      <if test="content != null" >
+        content = #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="firstPicture != null" >
+        first_picture = #{firstPicture,jdbcType=VARCHAR},
+      </if>
+      <if test="flag != null" >
+        flag = #{flag,jdbcType=VARCHAR},
+      </if>
+      <if test="published != null" >
+        published = #{published,jdbcType=BIT},
+      </if>
+      <if test="recommend != null" >
+        recommend = #{recommend,jdbcType=BIT},
+      </if>
+      <if test="shareStatement != null" >
+        share_statement = #{shareStatement,jdbcType=BIT},
+      </if>
+      <if test="title != null" >
+        title = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="views != null" >
+        views = #{views,jdbcType=INTEGER},
+      </if>
+      <if test="typeId != null" >
+        type_id = #{typeId,jdbcType=BIGINT},
+      </if>
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="tagIds != null" >
+        tag_ids = #{tagIds,jdbcType=BIGINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+<!--  根据Id修改-->
+  <update id="updateByPrimaryKey" parameterType="com.xhan.blog.pojo.TBlog" >
+    update t_blog
+    set appreciation = #{appreciation,jdbcType=BIT},
+      commentabled = #{commentabled,jdbcType=BIT},
+      description = #{description,jdbcType=BIT},
+      description = #{description,jdbcType=BIT},
+      content = #{content,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      first_picture = #{firstPicture,jdbcType=VARCHAR},
+      flag = #{flag,jdbcType=VARCHAR},
+      published = #{published,jdbcType=BIT},
+      recommend = #{recommend,jdbcType=BIT},
+      share_statement = #{shareStatement,jdbcType=BIT},
+      title = #{title,jdbcType=VARCHAR},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      views = #{views,jdbcType=INTEGER},
+      type_id = #{typeId,jdbcType=BIGINT},
+      user_id = #{userId,jdbcType=BIGINT},
+      tag_ids = #{tagIds,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+<!--  //根据搜索框搜索（标题，内容) 模糊查询 -->
+  <select id="getSearchBlog" resultMap="BaseResultMap" parameterType="java.lang.String">
+    <bind name="pattern" value="'%' + query + '%'" />
+    select b.id, b.title, b.first_picture, b.views, b.update_time, b.description,
+    t.name typename,
+    u.nickname, u.avatar
+    from t_blog b, t_type t, t_user u
+    where b.type_id = t.id and  u.id = b.user_id and (b.title like #{pattern} or b.content like  #{pattern})
+    order by b.update_time desc
+  </select>
+
+<!-- 多条件模糊查询-->
+  <select id="searchAllBlog" parameterType="com.xhan.blog.pojo.TBlog" resultMap="BaseResultMap">
+    select
+    b.id,b.title,b.update_time, b.recommend,b.type_id,
+    t.id typeid, t.name typename
+    from
+    t_blog b
+    ,
+    t_type t
+    where
+      <if test="1==1">
+        b.type_id=t.id
+      </if>
+      <if test="typeId != null and typeId !=''">
+        And t.id = #{typeId}
+      </if>
+      <if test="title!=null and title!=''">
+        AND b.title like CONCAT(CONCAT('%', #{title, jdbcType=VARCHAR}),'%')
+      </if>
+      <if test="recommend!=null and recommend != ''">
+        AND b.recommend=#{recommend}
+      </if>
+    order by update_time desc
+  </select>
+
+<!--查找出博客的年份，并按年份分组-->
+    <select id="getBlogYear" resultType="java.lang.String">
+        select DATE_FORMAT(b.create_time, '%Y') from t_blog b order by b.create_time desc
+    </select>
+   <select id="getBlogByYear" resultMap="BaseResultMap">
+       select b.id,b.title,b.create_time,b.flag from t_blog b where DATE_FORMAT(b.create_time,"%Y")=#{year}
+   </select>
+
+
+
+</mapper>

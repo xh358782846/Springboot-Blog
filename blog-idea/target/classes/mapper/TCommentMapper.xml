@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xhan.blog.dao.TCommentMapper" >
+  <resultMap id="BaseResultMap" type="com.xhan.blog.pojo.TComment" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="avatar" property="avatar" jdbcType="VARCHAR" />
+    <result column="content" property="content" jdbcType="VARCHAR" />
+    <result  column="admincomment" property="adminComment"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="email" property="email" jdbcType="VARCHAR" />
+    <result column="nickname" property="nickname" jdbcType="VARCHAR" />
+    <result column="blog_id" property="blogId" jdbcType="BIGINT" />
+    <result column="parent_comment_id" property="parentCommentId" jdbcType="BIGINT" />
+    <association property="blog" javaType="com.xhan.blog.pojo.TBlog">
+      <id column="bid" property="id"/>
+    </association>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, avatar, content, create_time, email, nickname, blog_id, parent_comment_id
+  </sql>
+
+  <select id="getCommentListBybBlogId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select c.id,c.avatar,c.content,c.create_time,c.email,c.nickname,c.blog_id,c.parent_comment_id,c.admincomment
+    from t_comment c,t_blog b
+    where c.blog_id=b.id and c.blog_id=#{bid} order by create_time desc
+  </select>
+
+  <select id="findByParentCommentId" resultMap="BaseResultMap">
+        select c.id cid, c.nickname, c.email, c.content, c.avatar,
+        c.create_time, c.blog_id, c.parent_comment_id
+        from t_comment c
+        where c.parent_comment_id = #{parentCommentId}
+    </select>
+
+
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_comment
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from t_comment
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.xhan.blog.pojo.TComment" >
+        insert into blog.t_comment (nickname,email,content,avatar,
+        create_time,blog_id,parent_comment_id, admincomment)
+        values (#{nickname},#{email},#{content},#{avatar},
+        #{createTime},#{blogId},#{parentCommentId}, #{adminComment});
+  </insert>
+  <insert id="insertSelective" parameterType="com.xhan.blog.pojo.TComment" >
+    insert into t_comment
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="avatar != null" >
+        avatar,
+      </if>
+      <if test="content != null" >
+        content,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="email != null" >
+        email,
+      </if>
+      <if test="nickname != null" >
+        nickname,
+      </if>
+      <if test="blogId != null" >
+        blog_id,
+      </if>
+      <if test="parentCommentId != null" >
+        parent_comment_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="avatar != null" >
+        #{avatar,jdbcType=VARCHAR},
+      </if>
+      <if test="content != null" >
+        #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="email != null" >
+        #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="nickname != null" >
+        #{nickname,jdbcType=VARCHAR},
+      </if>
+      <if test="blogId != null" >
+        #{blogId,jdbcType=BIGINT},
+      </if>
+      <if test="parentCommentId != null" >
+        #{parentCommentId,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.xhan.blog.pojo.TComment" >
+    update t_comment
+    <set >
+      <if test="avatar != null" >
+        avatar = #{avatar,jdbcType=VARCHAR},
+      </if>
+      <if test="content != null" >
+        content = #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="email != null" >
+        email = #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="nickname != null" >
+        nickname = #{nickname,jdbcType=VARCHAR},
+      </if>
+      <if test="blogId != null" >
+        blog_id = #{blogId,jdbcType=BIGINT},
+      </if>
+      <if test="parentCommentId != null" >
+        parent_comment_id = #{parentCommentId,jdbcType=BIGINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.xhan.blog.pojo.TComment" >
+    update t_comment
+    set avatar = #{avatar,jdbcType=VARCHAR},
+      content = #{content,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      email = #{email,jdbcType=VARCHAR},
+      nickname = #{nickname,jdbcType=VARCHAR},
+      blog_id = #{blogId,jdbcType=BIGINT},
+      parent_comment_id = #{parentCommentId,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

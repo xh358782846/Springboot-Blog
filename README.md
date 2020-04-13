@@ -1,7 +1,9 @@
 # Springboot-
 利用Springboot，mybatis开发的小型博客
+
 --------------
-emantic-ui
+前端技术：
+thymeleaf模板，jQuery.js,semantic-ui
   ----------
 后端框架：
   Spring boot，

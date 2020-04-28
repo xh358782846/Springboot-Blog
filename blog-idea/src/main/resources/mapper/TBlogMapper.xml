@@ -89,10 +89,7 @@
     update t_blog set views=#{views} where  id=#{id};
   </update>
 
-<!--  博客标签修改时先删除后保存-->
-  <delete id="deleteBlogAndTag" parameterType="java.lang.Long">
-    delete from t_blog_tags where blogs_id= #{id};
-  </delete>
+
 <!--将博客对应的标签Id和博客对应关系储存 以便查询-->
   <insert id="saveBlogAndTag" parameterType="com.xhan.blog.pojo.TBlogTags" >
         insert into t_blog_tags (tags_id, blogs_id) values (#{tagsId},#{blogsId});
@@ -116,10 +113,14 @@
         where b.type_id = t.id and u.id = b.user_id and tb.blogs_id = b.id and tb.tags_id = t1.id and t1.id = #{tagId}
         order by b.update_time desc
     </select>
+<!--  博客标签修改时先删除后保存-->
+  <delete id="deleteBlogAndTag" parameterType="java.lang.Long">
+    delete from t_blog_tags where blogs_id= #{id};
+  </delete>
 <!--根据Id删除对应的博客-->
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
 
-    DELETE t_blog,t_blog_tags from t_blog LEFT JOIN t_blog_tags ON t_blog.id=t_blog_tags.blogs_id WHERE t_blog.id=#{id,jdbcType=BIGINT}
+    delete from t_blog  WHERE id=#{id}
 
   </delete>
 

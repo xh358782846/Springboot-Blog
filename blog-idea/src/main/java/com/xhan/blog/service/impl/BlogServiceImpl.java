@@ -108,7 +108,12 @@ public class BlogServiceImpl implements BlogService {
 
     @Override
     public int deleteBlog(Long id) {
-        return tBlogMapper.deleteByPrimaryKey(id);
+        int del=tBlogMapper.deleteBlogAndTag(id);
+        System.out.print(del);
+        if (del!=0){
+            return tBlogMapper.deleteByPrimaryKey(id);
+        }
+        return 0;
     }
 
     @Override

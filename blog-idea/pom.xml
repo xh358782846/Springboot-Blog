@@ -91,11 +91,12 @@
 			<scope>runtime</scope>
 		</dependency>
 		<!--log4j-->
-		<dependency>
+		<!-- 日志插件，暂时不启用		 -->
+<!-- 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.17</version>
-		</dependency>
+		</dependency> -->
 
 		<!--servlet-->
 		<dependency>

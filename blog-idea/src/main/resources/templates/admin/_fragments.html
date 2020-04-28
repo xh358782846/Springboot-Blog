@@ -18,10 +18,10 @@
 <nav th:fragment="menu(n)" class="ui inverted attached segment m-padded-tb-mini m-shadow-small">
     <div class="ui container">
         <div class="ui inverted secondary stackable menu">
-            <h2 class="ui teal header item">管理后台</h2>
-            <a href="#" th:href="@{/admin/blogs}" class="m-item item m-mobile-hide" th:classappend="${n==1}?'active'"><i class="mini home  icon"></i><span th:text="#{nav.blog}"></span></a>
-            <a href="#" th:href="@{/admin/types}" class="m-item item m-mobile-hide" th:classappend="${n==2}?'active'"><i class="mini idea icon"></i><span th:text="#{nav.type}"></span></a>
-            <a href="#" th:href="@{/admin/tags}"  class="m-item item m-mobile-hide" th:classappend="${n==3}?'active'"><i class="mini  tag  grey icon"></i><span th:text="#{nav.tag}"></span></a>
+            <h2 class="ui teal header item">后台管理</h2>
+            <a href="#" th:href="@{/admin/blogs}" class="m-item item m-mobile-hide" th:classappend="${n==1}?'active'"><i class=" home  icon"></i><span th:text="#{nav.blog}"></span></a>
+            <a href="#" th:href="@{/admin/types}" class="m-item item m-mobile-hide" th:classappend="${n==2}?'active'"><i class=" idea icon"></i><span th:text="#{nav.type}"></span></a>
+            <a href="#" th:href="@{/admin/tags}"  class="m-item item m-mobile-hide" th:classappend="${n==3}?'active'"><i class=" tag  grey icon"></i><span th:text="#{nav.tag}"></span></a>
 
             <div class="right m-item  m-mobile-hide menu">
                 <div class="ui dropdown item">

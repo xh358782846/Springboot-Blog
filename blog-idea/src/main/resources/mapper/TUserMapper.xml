@@ -15,7 +15,12 @@
   <sql id="Base_Column_List" >
     id, avatar, create_time, email, nickname, password, type, update_time, username
   </sql>
-
+   <select id="selectByName" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from t_user
+    where username=#{username,jdbcType=VARCHAR}
+  </select>
   <select id="findByUsernameAndPassword" parameterType="com.xhan.blog.pojo.TUser" resultMap="BaseResultMap">
     select
     <include refid="Base_Column_List"/>

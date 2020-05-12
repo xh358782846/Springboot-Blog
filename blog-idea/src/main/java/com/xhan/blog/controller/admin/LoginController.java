@@ -20,7 +20,25 @@ public class LoginController {
 
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private TUserMapper tUserMapper;
 
+    @GetMapping(value = "toRegister")
+    public String registerPage(){
+        return "admin/register";
+    }
+
+    @PostMapping(value = "register")
+    public String register( TUser user,RedirectAttributes redirectAttributes) {
+        if (tUserMapper.selectByName(user.getUsername())!=null) {
+            redirectAttributes.addFlashAttribute("message", "注册失败,用户名重复");
+            return "redirect:toRegister";
+        } else {
+            userService.insert(user);
+            return "admin/login";
+        }
+    }
     @GetMapping
     public String loginPage(){
         return "admin/login";
